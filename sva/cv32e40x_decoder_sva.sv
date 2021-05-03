@@ -35,6 +35,11 @@ module cv32e40x_decoder_sva
    );
 
   
+
+  // FIXME: Undo when DSIM is fixed (scheduled 5/10/21)
+
+  `ifndef DSIM
+
   // Check sub decoders have their outputs idle when there's no instruction match
   property p_idle_dec(decoder_ctrl_t dec_ctrl);
     @(posedge clk) disable iff (!rst_n)
@@ -45,7 +50,8 @@ module cv32e40x_decoder_sva
   a_a_dec_idle : assert property(p_idle_dec(decoder_a_ctrl)) else `uvm_error("decoder", "Assertion a_a_dec_idle failed")
   a_i_dec_idle : assert property(p_idle_dec(decoder_i_ctrl)) else `uvm_error("decoder", "Assertion a_i_dec_idle failed")
   
-
+  `endif 
+  
 endmodule : cv32e40x_decoder_sva
 
 
