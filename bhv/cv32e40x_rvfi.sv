@@ -42,6 +42,7 @@ module cv32e40x_rvfi
    input logic                                lsu_en_id_i,
    input logic                                lsu_we_id_i,
    input logic [1:0]                          lsu_type_id_i,
+   input logic                                lsu_err_wb_i,
    // Register reads
    input logic [4:0]                          rs1_addr_id_i,
    input logic [4:0]                          rs2_addr_id_i,
@@ -436,6 +437,7 @@ module cv32e40x_rvfi
   logic         is_dret_wb;
   logic         exception_in_wb;
   logic         interrupt_in_if;
+  logic         nmi_entered;
 
   logic [6:0]   insn_opcode;
   logic [4:0]   insn_rd;
@@ -462,6 +464,7 @@ module cv32e40x_rvfi
   assign exception_in_wb   = (pc_mux_i == PC_EXCEPTION) && ((exc_pc_mux_i == EXC_PC_EXCEPTION) ||
                                                             (exc_pc_mux_i == EXC_PC_DBE));
   assign is_dret_wb        = (pc_mux_i == PC_DRET);
+  assign nmi_entered       = (pc_mux_i == PC_EXCEPTION) && (exc_pc_mux_i == EXC_PC_NMI);
 
   // Assign rvfi channels
   assign rvfi_halt              = 1'b0; // No intruction causing halt in cv32e40x
@@ -826,8 +829,10 @@ module cv32e40x_rvfi
 
   // Debug / Trace
   assign rvfi_csr_rdata_d.dcsr               = csr_dcsr_q_i;
-  assign rvfi_csr_wdata_d.dcsr               = csr_dcsr_n_i;
-  assign rvfi_csr_wmask_d.dcsr               = csr_dcsr_we_i ? '1 : '0;
+  assign rvfi_csr_wdata_d.dcsr               = csr_dcsr_n_i |
+                                               (lsu_err_wb_i << 3);
+  assign rvfi_csr_wmask_d.dcsr               = csr_dcsr_we_i ? '1 :
+                                               (lsu_err_wb_i && debug_mode_i) ? 32'h8 : '0;
 
   assign rvfi_csr_rdata_d.dpc                = csr_dpc_q_i;
   assign rvfi_csr_wdata_d.dpc                = csr_dpc_n_i;

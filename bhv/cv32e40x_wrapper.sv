@@ -191,7 +191,7 @@ module cv32e40x_wrapper
 
   bind cv32e40x_prefetcher:
     core_i.if_stage_i.prefetch_unit_i.prefetcher_i
-      cv32e40x_prefetcher_sva  
+      cv32e40x_prefetcher_sva
         prefetcher_sva (.*);
 
   bind cv32e40x_core:
@@ -222,14 +222,14 @@ bind cv32e40x_sleep_unit:
                     .ctrl_fsm_ns (core_i.controller_i.controller_fsm_i.ctrl_fsm_ns),
                     .*);
 
-  bind cv32e40x_decoder: core_i.id_stage_i.decoder_i cv32e40x_decoder_sva 
-    decoder_sva(.clk(core_i.id_stage_i.clk), 
+  bind cv32e40x_decoder: core_i.id_stage_i.decoder_i cv32e40x_decoder_sva
+    decoder_sva(.clk(core_i.id_stage_i.clk),
                 .rst_n(core_i.id_stage_i.rst_n),
                 .*);
 
   // MPU assertions
-  bind cv32e40x_mpu: 
-    core_i.if_stage_i.mpu_i 
+  bind cv32e40x_mpu:
+    core_i.if_stage_i.mpu_i
     cv32e40x_mpu_sva
       #(.PMA_NUM_REGIONS(PMA_NUM_REGIONS),
         .PMA_CFG(PMA_CFG),
@@ -264,9 +264,9 @@ bind cv32e40x_sleep_unit:
                .ctrl_fsm_debug_cause(core_i.ctrl_fsm.debug_cause),
                .ebreak_in_wb_i(core_i.controller_i.controller_fsm_i.ebreak_in_wb),
                .*);
-  
+
 `endif //  `ifndef COREV_ASSERT_OFF
-  
+
     cv32e40x_core_log
      #(
           .NUM_MHPMCOUNTERS      ( NUM_MHPMCOUNTERS      ))
@@ -274,7 +274,7 @@ bind cv32e40x_sleep_unit:
           .clk_i              ( core_i.id_stage_i.clk              ),
           .ex_wb_pipe_i       ( core_i.ex_wb_pipe                  ),
           .hart_id_i          ( core_i.hart_id_i                   )
-          
+
       );
 
     cv32e40x_rvfi
@@ -313,6 +313,7 @@ bind cv32e40x_sleep_unit:
          .lsu_en_id_i              ( core_i.id_stage_i.lsu_en                                             ),
          .lsu_type_id_i            ( core_i.id_stage_i.lsu_type                                           ),
          .lsu_we_id_i              ( core_i.id_stage_i.lsu_we                                             ),
+         .lsu_err_wb_i             ( core_i.controller_i.controller_fsm_i.lsu_err_wb_i                    ),
 
          .branch_in_ex_i           ( core_i.controller_i.controller_fsm_i.branch_in_ex                    ),
          .lsu_en_ex_i              ( core_i.ex_stage_i.id_ex_pipe_i.lsu_en                                ),
@@ -385,7 +386,8 @@ bind cv32e40x_sleep_unit:
          .csr_tinfo_q_i            ( {16'h0, core_i.cs_registers_i.tinfo_types}                           ),
          .csr_tinfo_we_i           ( core_i.cs_registers_i.csr_we_int &&
                                      (core_i.cs_registers_i.csr_waddr == CSR_TINFO)                       ),
-         .csr_dcsr_q_i             ( core_i.cs_registers_i.dcsr_q                                         ),
+         .csr_dcsr_q_i             ( core_i.cs_registers_i.dcsr_q |
+                                     core_i.cs_registers_i.ctrl_fsm_i.pending_nmi << 3                    ),
          .csr_dcsr_n_i             ( core_i.cs_registers_i.dcsr_n                                         ),
          .csr_dcsr_we_i            ( core_i.cs_registers_i.dcsr_we                                        ),
          .csr_debug_csr_save_i     ( core_i.cs_registers_i.ctrl_fsm_i.debug_csr_save                      ),
